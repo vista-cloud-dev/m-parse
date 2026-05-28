@@ -29,7 +29,10 @@ exports='[
 "_tsm_node_child","_tsm_node_named_child","_tsm_node_field_name_for_child",
 "_tsm_node_is_named","_tsm_node_is_missing","_tsm_node_is_error",
 "_tsm_node_has_error","_tsm_node_is_null","_tsm_node_string",
-"_tsm_language_abi_version","_tsm_language_symbol_count"
+"_tsm_language_abi_version","_tsm_language_symbol_count",
+"_tsm_query_new","_tsm_query_delete","_tsm_query_capture_name",
+"_tsm_query_cursor_new","_tsm_query_cursor_delete",
+"_tsm_query_cursor_exec","_tsm_query_cursor_next_capture"
 ]'
 
 echo "building $out via $img (offline if cached)…"

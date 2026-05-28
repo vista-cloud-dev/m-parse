@@ -101,3 +101,60 @@ char *tsm_node_string(TSNode *n) { return ts_node_string(*n); }
 
 uint32_t tsm_language_abi_version(void) { return ts_language_abi_version(tree_sitter_m()); }
 uint32_t tsm_language_symbol_count(void) { return ts_language_symbol_count(tree_sitter_m()); }
+
+// --- query API ---------------------------------------------------------------
+//
+// tree-sitter queries match S-expression patterns against the tree and bind
+// @captures. The raw API passes TSNode and TSQueryMatch by value/struct, so
+// these wrappers keep all of that inside wasm and expose only handles+scalars:
+// a query handle, a cursor handle, and a per-capture pull iterator.
+
+// Compile a query against the M grammar. Returns a query handle, or NULL on a
+// compile error — then *err_offset = the byte offset and *err_type = the
+// TSQueryError code (1=syntax, 2=node-type, 3=field, 4=capture, 5=structure).
+TSQuery *tsm_query_new(const char *src, uint32_t len, uint32_t *err_offset, uint32_t *err_type) {
+  TSQueryError et = TSQueryErrorNone;
+  uint32_t eo = 0;
+  TSQuery *q = ts_query_new(tree_sitter_m(), src, len, &eo, &et);
+  if (err_offset != NULL) *err_offset = eo;
+  if (err_type != NULL) *err_type = (uint32_t)et;
+  return q;
+}
+
+void tsm_query_delete(TSQuery *q) { ts_query_delete(q); }
+
+// Name of a capture id (the @name). Writes the length to *out_len; the returned
+// bytes are NOT NUL-terminated, so the caller reads exactly *out_len bytes.
+const char *tsm_query_capture_name(TSQuery *q, uint32_t id, uint32_t *out_len) {
+  uint32_t n = 0;
+  const char *s = ts_query_capture_name_for_id(q, id, &n);
+  if (out_len != NULL) *out_len = n;
+  return s;
+}
+
+TSQueryCursor *tsm_query_cursor_new(void) { return ts_query_cursor_new(); }
+void tsm_query_cursor_delete(TSQueryCursor *c) { ts_query_cursor_delete(c); }
+
+// Run the query over the subtree rooted at *node.
+void tsm_query_cursor_exec(TSQueryCursor *c, const TSQuery *q, TSNode *node) {
+  ts_query_cursor_exec(c, q, *node);
+}
+
+// Pull the next capture (document order). Returns 1 if one was produced — then
+// *out_node = a freshly boxed node handle (caller frees with tsm_node_delete),
+// *out_capture_id = the capture's @name id (→ tsm_query_capture_name),
+// *out_match_id = the owning match's id, *out_pattern = the pattern index —
+// else 0 when iteration is exhausted.
+int32_t tsm_query_cursor_next_capture(TSQueryCursor *c, TSNode **out_node,
+                                      uint32_t *out_capture_id, uint32_t *out_match_id,
+                                      uint32_t *out_pattern) {
+  TSQueryMatch match;
+  uint32_t cap_index = 0;
+  if (!ts_query_cursor_next_capture(c, &match, &cap_index)) return 0;
+  TSQueryCapture cap = match.captures[cap_index];
+  if (out_node != NULL) *out_node = box(cap.node);
+  if (out_capture_id != NULL) *out_capture_id = cap.index;
+  if (out_match_id != NULL) *out_match_id = match.id;
+  if (out_pattern != NULL) *out_pattern = (uint32_t)match.pattern_index;
+  return 1;
+}
