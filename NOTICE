@@ -1,0 +1,26 @@
+m-parse
+Copyright 2026 vista-cloud-dev
+
+The Go code in this product (the parse package, the m-parse CLI, clikit, and
+wasm/shim.c) is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+m-parse is the engine-neutral M parse substrate for the m-cli Go toolchain. It
+runs the tree-sitter-m grammar as WebAssembly via wazero (no CGO), so the
+toolchain stays statically linked (CGO_ENABLED=0). Go binaries are Apache-2.0;
+VS Code extensions in the toolchain are MIT (per-tier license split — see
+host-side-go-toolchain-adr.md §3.2).
+
+This product embeds and vendors third-party components (see wasm/VENDOR.md for
+full provenance, versions, and licenses):
+
+  - wazero (https://github.com/tetratelabs/wazero) — Apache-2.0. The pure-Go
+    WebAssembly runtime; a direct Go dependency.
+
+  - tree-sitter runtime (https://github.com/tree-sitter/tree-sitter) — MIT.
+    Vendored C sources (v0.25.10) compiled into the embedded grammar WASM.
+
+  - tree-sitter-m grammar (https://github.com/m-dev-tools/tree-sitter-m) —
+    AGPL-3.0. The M grammar (parser.c + scanner.c) compiled into the embedded
+    parse/tree-sitter-m.wasm. The compiled WASM is an AGPL-derived artifact.
+    Reconciling the grammar's AGPL with the toolchain's Apache-2.0 goal (spec
+    §10) is an OPEN ITEM for the toolchain owners.
