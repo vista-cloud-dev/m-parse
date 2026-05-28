@@ -16,7 +16,6 @@ import (
 // One Parser can produce many Trees sequentially.
 type Parser struct {
 	mu      sync.Mutex
-	ctx     context.Context
 	runtime wazero.Runtime
 	mod     api.Module
 	memory  api.Memory
@@ -49,7 +48,6 @@ func New(ctx context.Context) (*Parser, error) {
 	}
 
 	p := &Parser{
-		ctx:     ctx,
 		runtime: rt,
 		mod:     mod,
 		memory:  mod.Memory(),
@@ -63,7 +61,7 @@ func New(ctx context.Context) (*Parser, error) {
 		}
 	}
 
-	r, err := p.call("tsm_parser_new")
+	r, err := p.call(ctx, "tsm_parser_new")
 	if err != nil {
 		_ = rt.Close(ctx)
 		return nil, err
@@ -81,7 +79,7 @@ func (p *Parser) Close(ctx context.Context) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if p.parser != 0 {
-		_, _ = p.call("tsm_parser_delete", uint64(p.parser))
+		_, _ = p.call(ctx, "tsm_parser_delete", uint64(p.parser))
 		p.parser = 0
 	}
 	return p.runtime.Close(ctx)
@@ -97,7 +95,7 @@ func (p *Parser) Parse(ctx context.Context, src []byte) (*Tree, error) {
 	n := uint32(len(src))
 	var buf uint32
 	if n > 0 {
-		r, err := p.call("tsm_malloc", uint64(n))
+		r, err := p.call(ctx, "tsm_malloc", uint64(n))
 		if err != nil {
 			return nil, err
 		}
@@ -106,14 +104,14 @@ func (p *Parser) Parse(ctx context.Context, src []byte) (*Tree, error) {
 			return nil, fmt.Errorf("parse: wasm malloc(%d) failed", n)
 		}
 		if !p.memory.Write(buf, src) {
-			_, _ = p.call("tsm_free", uint64(buf))
+			_, _ = p.call(ctx, "tsm_free", uint64(buf))
 			return nil, fmt.Errorf("parse: writing %d source bytes to wasm memory failed", n)
 		}
 	}
 
-	r, err := p.call("tsm_parse", uint64(p.parser), uint64(buf), uint64(n))
+	r, err := p.call(ctx, "tsm_parse", uint64(p.parser), uint64(buf), uint64(n))
 	if buf != 0 {
-		_, _ = p.call("tsm_free", uint64(buf))
+		_, _ = p.call(ctx, "tsm_free", uint64(buf))
 	}
 	if err != nil {
 		return nil, err
@@ -144,7 +142,7 @@ func (p *Parser) SymbolCount() uint32 {
 
 // --- raw WASM call/memory helpers (no locking; callers must hold p.mu) ------
 
-func (p *Parser) call(name string, args ...uint64) ([]uint64, error) {
+func (p *Parser) call(ctx context.Context, name string, args ...uint64) ([]uint64, error) {
 	fn := p.fns[name]
 	if fn == nil {
 		fn = p.mod.ExportedFunction(name)
@@ -153,13 +151,14 @@ func (p *Parser) call(name string, args ...uint64) ([]uint64, error) {
 		}
 		p.fns[name] = fn
 	}
-	return fn.Call(p.ctx, args...)
+	return fn.Call(ctx, args...)
 }
 
-// must1 calls a single-result function; a trap here means a binding/shim bug,
-// so it panics rather than poisoning the clean Node API with errors.
+// must1 calls a single-result node accessor; a trap here means a binding/shim
+// bug, so it panics rather than poisoning the clean Node API with errors. Node
+// accessors are pure/fast, so they run under context.Background.
 func (p *Parser) must1(name string, args ...uint64) uint64 {
-	r, err := p.call(name, args...)
+	r, err := p.call(context.Background(), name, args...)
 	if err != nil {
 		panic(fmt.Sprintf("parse: %s: %v", name, err))
 	}

@@ -14,6 +14,7 @@
 package parse
 
 import (
+	"context"
 	"crypto/sha256"
 	_ "embed"
 	"encoding/hex"
@@ -63,9 +64,9 @@ func (t *Tree) Close() {
 	t.p.mu.Lock()
 	defer t.p.mu.Unlock()
 	for _, n := range t.nodes {
-		_, _ = t.p.call("tsm_node_delete", uint64(n))
+		_, _ = t.p.call(context.Background(), "tsm_node_delete", uint64(n))
 	}
-	_, _ = t.p.call("tsm_tree_delete", uint64(t.ptr))
+	_, _ = t.p.call(context.Background(), "tsm_tree_delete", uint64(t.ptr))
 	t.nodes = nil
 	t.ptr = 0
 }
@@ -163,7 +164,7 @@ func (n Node) SExpr() string {
 		return ""
 	}
 	s := n.t.p.readCStr(ptr)
-	_, _ = n.t.p.call("tsm_free", uint64(ptr))
+	_, _ = n.t.p.call(context.Background(), "tsm_free", uint64(ptr))
 	return s
 }
 
