@@ -37,11 +37,15 @@ lists the flat `tsm_*` ABI from `shim.c`.
 Grammar ABI 15 is within the runtime's supported range
 (`TREE_SITTER_MIN_COMPATIBLE_LANGUAGE_VERSION` 13 … `TREE_SITTER_LANGUAGE_VERSION` 15).
 
-## Licensing note (open item)
+## Licensing note (deferred to project completion)
 
-The compiled `tree-sitter-m.wasm` embeds the **AGPL-3.0** grammar. The Go code in
-this repo is Apache-2.0, and the toolchain spec (§10) wants the Go binaries
-Apache-2.0. Reconciling the grammar's AGPL with that goal — relicense the
-grammar, dual-license, or accept AGPL for the embedded artifact — is a decision
-for the toolchain owners. It does not affect the parse substrate's technical
-behavior. See the repo `NOTICE` and the spec.
+The compiled `tree-sitter-m.wasm` embeds the currently **AGPL-3.0** grammar,
+while the Go code in this repo is Apache-2.0.
+
+**Project policy: all licensing reconciliation is deferred to project
+completion.** At that point everything will be reconciled to a single end-state —
+**Apache-2.0 for every artifact except the VS Code extensions, which will be
+MIT** (spec §10). The grammar's interim AGPL status is intentionally **not** a
+blocker and does not affect the parse substrate's technical behavior; it will be
+relicensed/reconciled to fit the Apache-2.0 end-state at completion. See the repo
+`NOTICE` and the spec.

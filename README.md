@@ -183,9 +183,12 @@ Licenses differ **by artifact**:
 
 - **The Go code** in this repo (`parse/`, `main.go`, `clikit/`, `wasm/shim.c`) is
   **Apache-2.0** — see [`LICENSE`](LICENSE) / [`NOTICE`](NOTICE).
-- **The embedded `tree-sitter-m.wasm`** is built from the `tree-sitter-m` grammar,
-  which is **AGPL-3.0**, plus the tree-sitter runtime (**MIT**). The compiled
-  WASM is therefore an AGPL-derived artifact embedded in the binary. The spec
-  wants the Go binaries Apache-2.0 (spec §10); reconciling the grammar's license
-  with that goal is an **open item** flagged for the toolchain owners — it does
-  not affect the spike's technical result. See [`wasm/VENDOR.md`](wasm/VENDOR.md).
+- **The embedded `tree-sitter-m.wasm`** is built from the `tree-sitter-m` grammar
+  (currently **AGPL-3.0**) plus the tree-sitter runtime (**MIT**), so that
+  artifact is presently AGPL-derived.
+
+**Licensing reconciliation is deferred to project completion** (project policy):
+all toolchain licensing — including this embedded grammar — is reconciled then,
+to a single end-state of **Apache-2.0 for every artifact except the VS Code
+extensions (MIT)** (spec §10). The grammar's interim AGPL status is not a blocker
+and does not affect the technical result. See [`wasm/VENDOR.md`](wasm/VENDOR.md).

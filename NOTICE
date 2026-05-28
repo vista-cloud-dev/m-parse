@@ -20,7 +20,13 @@ full provenance, versions, and licenses):
     Vendored C sources (v0.25.10) compiled into the embedded grammar WASM.
 
   - tree-sitter-m grammar (https://github.com/m-dev-tools/tree-sitter-m) —
-    AGPL-3.0. The M grammar (parser.c + scanner.c) compiled into the embedded
-    parse/tree-sitter-m.wasm. The compiled WASM is an AGPL-derived artifact.
-    Reconciling the grammar's AGPL with the toolchain's Apache-2.0 goal (spec
-    §10) is an OPEN ITEM for the toolchain owners.
+    currently AGPL-3.0. The M grammar (parser.c + scanner.c) is compiled into
+    the embedded parse/tree-sitter-m.wasm, so that artifact is presently
+    AGPL-derived.
+
+Licensing reconciliation is DEFERRED to project completion (project policy):
+all toolchain licensing — including this embedded grammar — will be reconciled
+then, with the end-state being Apache-2.0 for every artifact except the VS Code
+extensions, which will be MIT. The grammar's interim AGPL status is therefore
+not treated as a blocker; it will be relicensed/reconciled to fit the Apache-2.0
+end-state at completion.
