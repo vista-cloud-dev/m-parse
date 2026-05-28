@@ -1,0 +1,10 @@
+SAMPLE ; an IRIS-style .mac routine in plain M
+ ; non-MUMPS .mac constructs (preprocessor, embedded SQL, ObjectScript)
+ ; are out of scope (spec §4/§13); this fixture is in-scope standard M.
+EN ; entry point
+ NEW count,i
+ SET count=0
+ FOR i=1:1:10 DO
+ . SET count=count+i
+ WRITE "sum=",count,!
+ QUIT count

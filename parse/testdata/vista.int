@@ -1,0 +1,18 @@
+DGTEST ;ALB/MJK - SAMPLE VISTA ROUTINE ;1/16/92  10:00
+ ;;5.3;Registration;**1,32**;Aug 13, 1993
+ ;
+EN ; -- main entry point
+ N DFN,NAME
+ S DFN=$$FIRST()
+ I DFN'>0 W !,"no patient" Q
+ F  S DFN=$O(^DPT(DFN)) Q:DFN'>0  D SHOW(DFN)
+ Q
+ ;
+SHOW(DFN) ; display one record
+ N NAME
+ S NAME=$P($G(^DPT(+DFN,0)),"^",1)
+ W !,DFN,?10,NAME
+ Q
+ ;
+FIRST() ; first patient ien
+ Q +$O(^DPT(0))
