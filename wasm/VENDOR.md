@@ -10,7 +10,7 @@ rebuild it with `make wasm` only when one of these inputs changes.
 | Path | Upstream | Version / commit | License |
 |------|----------|------------------|---------|
 | `vendor/runtime/` | [tree-sitter/tree-sitter](https://github.com/tree-sitter/tree-sitter) | `0.25.10` (from the `tree-sitter` crate `src/` + `include/`) | **MIT** |
-| `vendor/grammar/src/{parser.c,scanner.c,tree_sitter/*.h}` | [m-dev-tools/tree-sitter-m](https://github.com/m-dev-tools/tree-sitter-m) | commit `94eb80d` (grammar ABI **15**) | **AGPL-3.0** |
+| `vendor/grammar/src/{parser.c,scanner.c,tree_sitter/*.h}` | [m-dev-tools/tree-sitter-m](https://github.com/m-dev-tools/tree-sitter-m) | **v0.1.2**, commit `c796342` (grammar ABI **15**) | **AGPL-3.0** |
 | `shim.c` | this repo | — | Apache-2.0 |
 
 The runtime amalgamation (`vendor/runtime/src/lib.c`) `#include`s the rest of the
@@ -36,6 +36,24 @@ lists the flat `tsm_*` ABI from `shim.c`.
 
 Grammar ABI 15 is within the runtime's supported range
 (`TREE_SITTER_MIN_COMPATIBLE_LANGUAGE_VERSION` 13 … `TREE_SITTER_LANGUAGE_VERSION` 15).
+
+## Revendor history
+
+| Grammar | tree-sitter-m | Notes |
+|---------|---------------|-------|
+| v0.1.2 | commit `c796342` (PR #7) | YottaDB m-modern-corpus coverage: `&`/`$&` external C call-outs, `WRITE`/`USE` `/mnemonic` device controls, `TSTART`/`LOCK` argument-list `:timeout`, `KILL *`/`TSTART *`, extended reference `^\|env\|gvn` / `^[env]gvn`. Additive grammar.js only — `scanner.c` unchanged. ABI unchanged (15). |
+| v0.1.1 | commit `94eb80d` | prior baseline. |
+
+**Parse-coverage impact of the v0.1.2 grammar** (files with a literal
+`(ERROR)` node, full corpora):
+
+| Corpus | before (v0.1.1) | after (v0.1.2) |
+|--------|-----------------|----------------|
+| m-modern-corpus (4,215 YDB routines) | 451 err / 89.30 % clean | **230 err / 94.54 % clean** |
+| VistA (39,330 routines) | 363 err / 99.08 % clean | **336 err / 99.15 % clean** (held; slightly improved) |
+
+The VistA corpus did not regress. **Follow-up:** m-cli must bump its
+m-parse dependency to pick up this grammar.
 
 ## Licensing note (deferred to project completion)
 
